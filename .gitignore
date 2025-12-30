@@ -1,7 +1,5 @@
-﻿# .gitignore corrigÃ© - utiliser des guillemets doubles pour Ã©viter les problÃ¨mes d'apostrophe
+﻿# .gitignore FINAL pour Render
 @"
-# .gitignore pour Symfony Brasil Burger avec Docker
-
 ### SYMFONY ###
 /vendor/
 /var/
@@ -36,7 +34,7 @@
 ### SESSIONS ###
 /sessions/
 
-### UPLOADS (GARDER STRUCTURE MAIS PAS LES FICHIERS) ###
+### UPLOADS ###
 /public/uploads/**/*.jpg
 /public/uploads/**/*.jpeg
 /public/uploads/**/*.png
@@ -71,33 +69,21 @@ Thumbs.db
 *.bak
 *.tmp
 
-### RENDER SPECIFIQUE ###
+### RENDER ###
 render-build.sh
 render.yaml
 
-### DOCKER (AJOUTS) ###
-# Fichiers Docker - NOTE: # .dockerignore (DOIT être versionné, retiré de la liste) DOIT Ãªtre versionnÃ© !
-Dockerfile
+### DOCKER ###
+# NOTE: Dockerfile et .dockerignore DOIVENT être versionnés !
+# Seuls ces fichiers Docker sont ignorés :
 docker-compose.yml
 docker-compose.*.yml
-
-# Dossier docker (mais garde un .gitkeep)
-/docker/
-!/docker/.gitkeep
-
-# Fichiers de build Docker
 docker-build.log
 docker-compose.override.yml
-
-# Images Docker locales
-*.tar
-*.tar.gz
-
-# Docker volumes
-**/docker-data/
-**/docker-volumes/
-
-# Docker Compose
 .env.docker
 docker.env
+*.tar
+*.tar.gz
+**/docker-data/
+**/docker-volumes/
 "@ | Set-Content -Path ".gitignore" -Encoding UTF8
