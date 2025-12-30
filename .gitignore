@@ -1,4 +1,4 @@
-# .gitignore pour Symfony Brasil Burger
+# .gitignore pour Symfony Brasil Burger avec Docker
 
 ### SYMFONY ###
 /vendor/
@@ -72,3 +72,30 @@ Thumbs.db
 ### RENDER SPECIFIQUE ###
 render-build.sh
 render.yaml
+
+### DOCKER (AJOUTS) ###
+# Fichiers Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Dossier docker (mais garde un .gitkeep)
+/docker/
+!/docker/.gitkeep
+
+# Fichiers de build Docker
+docker-build.log
+docker-compose.override.yml
+
+# Images Docker locales
+*.tar
+*.tar.gz
+
+# Docker volumes
+**/docker-data/
+**/docker-volumes/
+
+# Docker Compose
+.env.docker
+docker.env
