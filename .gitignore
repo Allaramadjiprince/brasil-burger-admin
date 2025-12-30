@@ -1,0 +1,74 @@
+# .gitignore pour Symfony Brasil Burger
+
+### SYMFONY ###
+/vendor/
+/var/
+/public/bundles/
+/translations/
+
+### ENVIRONNEMENT ###
+/.env
+/.env.local
+/.env.*.local
+/.env.prod.local
+/.env.test
+/.phpunit.result.cache
+/docker-compose.override.yml
+
+### LOGS ###
+*.log
+/logs/
+
+### CACHE ###
+/cache/
+/*/cache/
+*.cache
+
+### IDE ###
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+
+### SESSIONS ###
+/sessions/
+
+### UPLOADS (GARDER STRUCTURE MAIS PAS LES FICHIERS) ###
+/public/uploads/**/*.jpg
+/public/uploads/**/*.jpeg
+/public/uploads/**/*.png
+/public/uploads/**/*.gif
+/public/uploads/**/*.webp
+/public/uploads/**/*.pdf
+/public/uploads/**/*.zip
+!public/uploads/.gitkeep
+
+### NODE ###
+/node_modules/
+/npm-debug.log*
+/yarn-debug.log*
+/yarn-error.log*
+
+### COMPOSER ###
+/composer.lock
+/composer.phar
+
+### SYMFONY CACHE ###
+/.symfony.local/
+
+### TESTS ###
+/coverage/
+.phpunit.result.cache
+
+### DIVERS ###
+.DS_Store
+Thumbs.db
+.Trashes
+*.sql
+*.bak
+*.tmp
+
+### RENDER SPECIFIQUE ###
+render-build.sh
+render.yaml

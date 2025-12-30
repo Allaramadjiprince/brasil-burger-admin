@@ -1,0 +1,271 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails Paiement - Brasil Burger Admin{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-red">
+            <i class="fas fa-file-invoice-dollar me-2"></i>Détails du Paiement
+        </h1>
+        <div>
+            <a href="{{ path('admin_paiement_edit', {'id': paiement.id}) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i>Modifier
+            </a>
+            <a href="{{ path('admin_paiement_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            {# Carte principale #}
+            <div class="card shadow-lg">
+                <div class="card-header bg-red text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informations du Paiement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Détails</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th width="40%">ID Paiement:</th>
+                                            <td><strong>#{{ paiement.id }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date:</th>
+                                            <td>{{ paiement.date|date('d/m/Y H:i:s') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Montant:</th>
+                                            <td class="fs-5 fw-bold text-success">{{ paiement.montantFormatted }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Méthode:</th>
+                                            <td>
+                                                <span class="badge bg-info fs-6">
+                                                    <i class="fas fa-{{ paiement.methode == 'WAVE' ? 'wave-square' : 'mobile-alt' }} me-1"></i>
+                                                    {{ paiement.methodeLabel }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Statut:</th>
+                                            <td>
+                                                <span class="badge bg-{{ paiement.statutColor }} fs-6">
+                                                    {{ paiement.statutLabel }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Commande Associée</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if paiement.commande %}
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <th width="40%">Commande:</th>
+                                                <td>
+                                                    <a href="{{ path('admin_commande_show', {'id': paiement.commande.id}) }}" 
+                                                       class="text-decoration-none">
+                                                        #{{ paiement.commande.id }}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Client:</th>
+                                                <td>
+                                                    {% if paiement.commande.client %}
+                                                        {{ paiement.commande.client.nom }}
+                                                    {% else %}
+                                                        <span class="text-muted">N/A</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Statut:</th>
+                                                <td>
+                                                    <span class="badge bg-{{ paiement.commande.statut == 'livree' ? 'success' : 'warning' }}">
+                                                        {{ paiement.commande.statut|replace({'_': ' '})|title }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Total:</th>
+                                                <td class="fw-bold">{{ paiement.commande.total|number_format(0, ',', ' ') }} XOF</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Date:</th>
+                                                <td>{{ paiement.commande.dateCommande|date('d/m/Y H:i') }}</td>
+                                            </tr>
+                                        </table>
+                                    {% else %}
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                            <p>Aucune commande associée</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Actions #}
+                    <div class="card">
+                        <div class="card-header bg-dark text-white">
+                            <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex gap-2">
+                                {% if paiement.statut == 'EN_ATTENTE' %}
+                                    <form method="post" action="{{ path('admin_paiement_valider', {'id': paiement.id}) }}" 
+                                          onsubmit="return confirm('Confirmer la validation de ce paiement ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('valider' ~ paiement.id) }}">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check-circle me-1"></i>Valider le Paiement
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{{ path('admin_paiement_rejeter', {'id': paiement.id}) }}" 
+                                          onsubmit="return confirm('Marquer ce paiement comme échoué ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('rejeter' ~ paiement.id) }}">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-times-circle me-1"></i>Marquer comme Échec
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                {% if paiement.statut == 'PAYE' %}
+                                    <button class="btn btn-outline-success" disabled>
+                                        <i class="fas fa-check-double me-1"></i>Paiement Validé
+                                    </button>
+                                    <a href="#" class="btn btn-outline-primary">
+                                        <i class="fas fa-receipt me-1"></i>Générer Reçu
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            {# Statistiques #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-blue text-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Récapitulatif</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="display-4 text-{{ paiement.statutColor }}">
+                            {% if paiement.statut == 'PAYE' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elseif paiement.statut == 'EN_ATTENTE' %}
+                                <i class="fas fa-clock"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle"></i>
+                            {% endif %}
+                        </div>
+                        <h5 class="mt-2">{{ paiement.statutLabel }}</h5>
+                    </div>
+                    
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between">
+                            <span>Montant:</span>
+                            <strong class="text-success">{{ paiement.montantFormatted }}</strong>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between">
+                            <span>Méthode:</span>
+                            <strong>{{ paiement.methodeLabel }}</strong>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between">
+                            <span>Date création:</span>
+                            <span>{{ paiement.date|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between">
+                            <span>Heure:</span>
+                            <span>{{ paiement.date|date('H:i:s') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Historique #}
+            <div class="card shadow-sm">
+                <div class="card-header bg-yellow text-dark">
+                    <h6 class="mb-0"><i class="fas fa-history me-2"></i>Historique</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Paiement créé</h6>
+                                <p class="text-muted small">{{ paiement.date|date('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if paiement.statut == 'PAYE' %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Paiement validé</h6>
+                                    <p class="text-muted small">Par l'administrateur</p>
+                                </div>
+                            </div>
+                        {% elseif paiement.statut == 'ECHEC' %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-danger"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Paiement échoué</h6>
+                                    <p class="text-muted small">Transaction rejetée</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.timeline-content {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+.timeline-item:last-child .timeline-content {
+    border-bottom: none;
+}
+</style>
+{% endblock %}

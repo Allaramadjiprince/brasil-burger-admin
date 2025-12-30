@@ -1,0 +1,314 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques - Brasil Burger{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="header-section mb-4">
+        <div class="container">
+            <h1 class="display-6 mb-2">Statistiques et analyses</h1>
+            <p class="mb-0 opacity-90">
+                <i class="bi bi-calendar-range me-2"></i>
+                Période : 
+                <select class="form-select d-inline-block w-auto bg-transparent text-white border-white">
+                    <option value="7" selected>7 derniers jours</option>
+                    <option value="30">30 derniers jours</option>
+                    <option value="90">3 derniers mois</option>
+                    <option value="365">Cette année</option>
+                </select>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Cartes principales -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card card-dashboard">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Chiffre d'affaires</h6>
+                    <h2 class="text-success mb-1">{{ stats.ca|default(0)|format_currency('EUR') }}</h2>
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up-right"></i> 15% vs période précédente
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card card-dashboard">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Commandes</h6>
+                    <h2 class="text-primary mb-1">{{ stats.commandes|default(0) }}</h2>
+                    <small class="text-primary">
+                        <i class="bi bi-arrow-up-right"></i> 8% vs période précédente
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card card-dashboard">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Panier moyen</h6>
+                    <h2 class="text-info mb-1">{{ stats.panier_moyen|default(0)|format_currency('EUR') }}</h2>
+                    <small class="text-info">
+                        <i class="bi bi-arrow-up-right"></i> 3% vs période précédente
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card card-dashboard">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Nouveaux clients</h6>
+                    <h2 class="text-success mb-1">{{ stats.nouveaux_clients|default(0) }}</h2>
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up-right"></i> 22% vs période précédente
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Graphiques principaux -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card card-dashboard h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Évolution du chiffre d'affaires</h5>
+                    <canvas id="caChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card card-dashboard h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Répartition par heure</h5>
+                    <canvas id="heuresChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Deuxième ligne graphiques -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card card-dashboard h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Top 5 produits</h5>
+                    <canvas id="topProduitsChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card card-dashboard h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Méthodes de paiement</h5>
+                    <canvas id="paiementsChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tableau statistiques détaillées -->
+    <div class="card card-dashboard">
+        <div class="card-header bg-transparent border-bottom-0">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2 text-primary"></i>
+                Statistiques détaillées par jour
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-custom">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Commandes</th>
+                            <th>Chiffre d'affaires</th>
+                            <th>Panier moyen</th>
+                            <th>Nouveaux clients</th>
+                            <th>Taux d'annulation</th>
+                            <th>Temps moyen livraison</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for jour in stats_jour|default([]) %}
+                        <tr>
+                            <td class="fw-semibold">{{ jour.date|date('d/m') }}</td>
+                            <td>{{ jour.commandes }}</td>
+                            <td class="text-success fw-bold">{{ jour.ca|format_currency('EUR') }}</td>
+                            <td>{{ jour.panier_moyen|format_currency('EUR') }}</td>
+                            <td>{{ jour.nouveaux_clients }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">{{ jour.taux_annulation }}%</span>
+                                    {% if jour.taux_annulation < 5 %}
+                                        <span class="badge bg-success">Faible</span>
+                                    {% elseif jour.taux_annulation < 10 %}
+                                        <span class="badge bg-warning text-dark">Moyen</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Élevé</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ jour.temps_livraison }} min</td>
+                        </tr>
+                        {% else %}
+                        {% for i in 1..7 %}
+                        <tr>
+                            <td class="fw-semibold">{{ "now"|date_modify("-" ~ i ~ " day")|date("d/m") }}</td>
+                            <td>{{ random(20, 50) }}</td>
+                            <td class="text-success fw-bold">{{ random(500, 1500)|format_currency('EUR') }}</td>
+                            <td>{{ random(20, 35)|format_currency('EUR') }}</td>
+                            <td>{{ random(3, 12) }}</td>
+                            <td>
+                                {% set taux = random(2, 12) %}
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">{{ taux }}%</span>
+                                    {% if taux < 5 %}
+                                        <span class="badge bg-success">Faible</span>
+                                    {% elseif taux < 10 %}
+                                        <span class="badge bg-warning text-dark">Moyen</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Élevé</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ random(20, 35) }} min</td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chart CA
+const caCtx = document.getElementById('caChart').getContext('2d');
+new Chart(caCtx, {
+    type: 'line',
+    data: {
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        datasets: [{
+            label: 'Chiffre d\'affaires (€)',
+            data: [1250, 1320, 1100, 1450, 1680, 2100, 1850],
+            borderColor: '#009C3B',
+            backgroundColor: 'rgba(0, 156, 59, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+
+// Chart heures
+const heuresCtx = document.getElementById('heuresChart').getContext('2d');
+new Chart(heuresCtx, {
+    type: 'bar',
+    data: {
+        labels: ['11h', '12h', '13h', '14h', '18h', '19h', '20h', '21h'],
+        datasets: [{
+            label: 'Commandes',
+            data: [15, 42, 38, 25, 30, 48, 35, 18],
+            backgroundColor: [
+                'rgba(0, 156, 59, 0.7)',
+                'rgba(0, 156, 59, 0.8)',
+                'rgba(0, 156, 59, 0.7)',
+                'rgba(0, 156, 59, 0.6)',
+                'rgba(0, 156, 59, 0.7)',
+                'rgba(0, 156, 59, 0.9)',
+                'rgba(0, 156, 59, 0.8)',
+                'rgba(0, 156, 59, 0.6)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+
+// Chart top produits
+const topCtx = document.getElementById('topProduitsChart').getContext('2d');
+new Chart(topCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Brazil Classic', 'Rio Spicy', 'Veggie Burger', 'Frites Maison', 'Coca-Cola'],
+        datasets: [{
+            data: [35, 22, 18, 15, 10],
+            backgroundColor: [
+                '#009C3B',
+                '#FFDF00',
+                '#002776',
+                '#28a745',
+                '#dc3545'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Chart paiements
+const paiementsCtx = document.getElementById('paiementsChart').getContext('2d');
+new Chart(paiementsCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Wave', 'Orange Money', 'Carte bancaire', 'Espèces'],
+        datasets: [{
+            data: [45, 35, 15, 5],
+            backgroundColor: [
+                '#009C3B',
+                '#FF9800',
+                '#2196F3',
+                '#9C27B0'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+
+<style>
+.card-title {
+    color: var(--brasil-bleu);
+    font-weight: 600;
+}
+
+.table-custom th {
+    color: var(--brasil-bleu);
+}
+
+.badge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

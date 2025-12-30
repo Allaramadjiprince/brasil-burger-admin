@@ -1,0 +1,229 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails Livreur - Brasil Burger Admin{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-red">
+            <i class="fas fa-motorcycle me-2"></i>Détails du Livreur
+        </h1>
+        <div>
+            <a href="{{ path('admin_livreur_edit', {'id': livreur.id}) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i>Modifier
+            </a>
+            <a href="{{ path('admin_livreur_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
+
+    {# Carte principale #}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-lg">
+                <div class="card-header bg-red text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>Informations Personnelles
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <div class="avatar-lg mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" 
+                             style="width: 120px; height: 120px;">
+                            <i class="fas fa-user fa-4x text-red"></i>
+                        </div>
+                        <h3 class="mb-1">{{ livreur.nomComplet }}</h3>
+                        <p class="text-muted">Livreur ID: #{{ livreur.id }}</p>
+                    </div>
+                    
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">
+                                <i class="fas fa-phone me-2"></i>Téléphone
+                            </h6>
+                            <p class="fs-5">
+                                <a href="tel:+221{{ livreur.telephone }}" class="text-decoration-none">
+                                    +221 {{ livreur.telephone }}
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">
+                                <i class="fas fa-{{ livreur.vehicule == 'moto' ? 'motorcycle' : 'car' }} me-2"></i>Véhicule
+                            </h6>
+                            <p class="fs-5">
+                                {% if livreur.vehicule %}
+                                    <span class="badge bg-info fs-6">{{ livreur.vehicule|upper }}</span>
+                                {% else %}
+                                    <span class="text-muted">Non spécifié</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">
+                                <i class="fas fa-clock me-2"></i>Statut
+                            </h6>
+                            <p>
+                                {% if livreur.disponible %}
+                                    {% if livreur.peutPrendreNouvelleCommande %}
+                                        <span class="badge bg-success p-2">
+                                            <i class="fas fa-check-circle me-1"></i>Disponible
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark p-2">
+                                            <i class="fas fa-clock me-1"></i>Occupé ({{ livreur.nombreCommandesEnCours }}/3)
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-danger p-2">
+                                        <i class="fas fa-times-circle me-1"></i>Indisponible
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            {# Statistiques #}
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-blue text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">{{ livreur.commandes|length }}</h3>
+                            <p class="mb-0">Total Commandes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-yellow text-dark">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">{{ livreur.nombreCommandesEnCours }}</h3>
+                            <p class="mb-0">Commandes en cours</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card {{ livreur.disponible ? 'bg-success' : 'bg-danger' }} text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">
+                                {% if livreur.disponible %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle"></i>
+                                {% endif %}
+                            </h3>
+                            <p class="mb-0">
+                                {% if livreur.disponible %}Disponible{% else %}Indisponible{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Commandes en cours #}
+            <div class="card shadow-lg">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shipping-fast me-2"></i>Commandes en Cours ({{ livreur.nombreCommandesEnCours }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set commandesEnCours = livreur.commandesEnCours %}
+                    {% if commandesEnCours|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th># Commande</th>
+                                        <th>Client</th>
+                                        <th>Statut</th>
+                                        <th>Montant</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for commande in commandesEnCours %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ path('admin_commande_show', {'id': commande.id}) }}" 
+                                                   class="text-decoration-none">
+                                                    #{{ commande.id }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if commande.client %}
+                                                    {{ commande.client.nom }}
+                                                {% else %}
+                                                    Client supprimé
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ commande.statut == 'en_preparation' ? 'warning' : 'info' }}">
+                                                    {{ commande.statut|replace({'_': ' '})|title }}
+                                                </span>
+                                            </td>
+                                            <td>{{ commande.total|number_format(0, ',', ' ') }} XOF</td>
+                                            <td>{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-muted">Aucune commande en cours</h5>
+                            <p class="text-muted">Ce livreur n'a pas de livraison en ce moment</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Historique récent #}
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Historique Récent (5 dernières)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set recentes = livreur.commandes|slice(0, 5) %}
+                    {% if recentes|length > 0 %}
+                        <div class="list-group">
+                            {% for commande in recentes %}
+                                <a href="{{ path('admin_commande_show', {'id': commande.id}) }}" 
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Commande #{{ commande.id }}</h6>
+                                        <small>{{ commande.dateCommande|date('d/m/Y') }}</small>
+                                    </div>
+                                    <p class="mb-1">
+                                        Client: {{ commande.client ? commande.client.nom : 'N/A' }} | 
+                                        Montant: {{ commande.total|number_format(0, ',', ' ') }} XOF
+                                    </p>
+                                    <small>
+                                        Statut: 
+                                        <span class="badge bg-{{ commande.statut == 'livree' ? 'success' : 'secondary' }}">
+                                            {{ commande.statut|replace({'_': ' '})|title }}
+                                        </span>
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <p class="text-muted mb-0">Aucun historique de commande</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

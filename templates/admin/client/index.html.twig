@@ -1,0 +1,172 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clients - Brasil Burger Admin{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-red"><i class="fas fa-users me-2"></i>Gestion des Clients</h1>
+        
+        <form class="d-flex" method="get" action="{{ path('admin_client_index') }}">
+            <input class="form-control me-2" type="search" name="search" placeholder="Nom, email ou téléphone..." value="{{ search|default('') }}">
+            <button class="btn btn-red" type="submit">
+                <i class="fas fa-search"></i> Rechercher
+            </button>
+        </form>
+    </div>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-red text-white d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-list me-2"></i>Liste des Clients
+                <span class="badge bg-yellow text-dark ms-2">{{ clients|length }}</span>
+            </div>
+            <div>
+                <span class="small">
+                    <i class="fas fa-sync-alt"></i> Actualisé à {{ "now"|date("H:i") }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center">ID</th>
+                            <th><i class="fas fa-user me-1"></i> Client</th>
+                            <th><i class="fas fa-envelope me-1"></i> Email</th>
+                            <th><i class="fas fa-phone me-1"></i> Téléphone</th>
+                            <th class="text-center"><i class="fas fa-shopping-cart me-1"></i> Commandes</th>
+                            <th class="text-center"><i class="fas fa-cogs me-1"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for client in clients %}
+                        <tr>
+                            <td class="text-center fw-bold">#{{ client.id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-blue text-white me-3">
+                                        {{ client.prenom|first|upper }}{{ client.nom|first|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ client.prenom }} {{ client.nom }}</strong>
+                                        <div class="small text-muted">
+                                            Créé le {{ "now"|date("d/m/Y") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <i class="fas fa-envelope text-muted me-1"></i>
+                                {{ client.email }}
+                                <div class="small">
+                                    <span class="badge bg-success">Compte actif</span>
+                                </div>
+                            </td>
+                            <td>
+                                <i class="fas fa-phone text-muted me-1"></i>
+                                {{ client.telephone }}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary rounded-pill p-2">
+                                    <i class="fas fa-shopping-bag me-1"></i>
+                                    {{ client.commandes|length }} commande(s)
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ path('admin_client_show', {'id': client.id}) }}" 
+                                       class="btn btn-sm btn-blue" 
+                                       title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    
+                                    <button type="button" 
+                                            class="btn btn-sm btn-yellow" 
+                                            title="Modifier"
+                                            onclick="alert('Fonctionnalité à venir')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    
+                                    <form method="post" 
+                                          action="{{ path('admin_client_toggle_active', {'id': client.id}) }}" 
+                                          class="d-inline"
+                                          onsubmit="return confirm('Changer le statut de ce client ?')">
+                                        <button type="submit" class="btn btn-sm btn-red" title="Désactiver">
+                                            <i class="fas fa-power-off"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="fas fa-user-slash fa-4x text-muted mb-3"></i>
+                                    <h4 class="text-muted">Aucun client trouvé</h4>
+                                    <p class="text-muted">
+                                        {% if search %}
+                                            Aucun résultat pour "{{ search }}"
+                                        {% else %}
+                                            Aucun client enregistré pour le moment
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-light">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-info-circle text-blue me-2"></i>
+                        <small class="text-muted">
+                            Total : <strong>{{ clients|length }}</strong> client(s) • 
+                            Dernière mise à jour : {{ "now"|date("d/m/Y H:i") }}
+                        </small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-muted">
+                        <i class="fas fa-mobile-alt me-1"></i>
+                        Application Brasil Burger v1.0
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+.bg-red { background-color: #FF0000 !important; }
+.bg-blue { background-color: #002776 !important; }
+.bg-yellow { background-color: #FFDF00 !important; }
+.btn-red { background-color: #FF0000; color: white; border: none; }
+.btn-red:hover { background-color: #CC0000; }
+.btn-blue { background-color: #002776; color: white; border: none; }
+.btn-blue:hover { background-color: #001A5C; }
+.btn-yellow { background-color: #FFDF00; color: #333; border: none; }
+.btn-yellow:hover { background-color: #E6C900; }
+.empty-state { padding: 40px 0; }
+.table th { border-top: none; }
+.card { border-radius: 10px; overflow: hidden; }
+</style>
+{% endblock %}

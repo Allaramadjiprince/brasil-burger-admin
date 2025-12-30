@@ -1,0 +1,211 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Livreurs - Brasil Burger Admin{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-red">
+            <i class="fas fa-motorcycle me-2"></i>Gestion des Livreurs
+        </h1>
+        <a href="{{ path('admin_livreur_new') }}" class="btn btn-red">
+            <i class="fas fa-plus-circle me-1"></i>Nouveau Livreur
+        </a>
+    </div>
+
+    {# Statistiques #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-red text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Livreurs</h6>
+                            <h3 class="mb-0">{{ livreurs|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-yellow text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Disponibles</h6>
+                            <h3 class="mb-0">{{ livreurs|filter(l => l.disponible)|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-blue text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">En Livraison</h6>
+                            <h3 class="mb-0">{{ livreurs|filter(l => l.nombreCommandesEnCours > 0)|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shipping-fast fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Indisponibles</h6>
+                            <h3 class="mb-0">{{ livreurs|filter(l => not l.disponible)|length }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-times-circle fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Table des livreurs #}
+    <div class="card shadow-lg">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Liste des Livreurs
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if livreurs|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Livreur</th>
+                                <th>Téléphone</th>
+                                <th>Véhicule</th>
+                                <th>Statut</th>
+                                <th>Commandes en cours</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for livreur in livreurs %}
+                                <tr>
+                                    <td>{{ livreur.id }}</td>
+                                    <td>
+                                        <strong>{{ livreur.nomComplet }}</strong>
+                                        <div class="text-muted small">{{ livreur.prenom }} {{ livreur.nom }}</div>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone me-1"></i>
+                                        {{ livreur.telephone }}
+                                    </td>
+                                    <td>
+                                        {% if livreur.vehicule %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-{{ livreur.vehicule == 'moto' ? 'motorcycle' : 'car' }} me-1"></i>
+                                                {{ livreur.vehicule|capitalize }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">Non spécifié</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if livreur.disponible %}
+                                            {% if livreur.peutPrendreNouvelleCommande %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Disponible
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-clock me-1"></i>Occupé
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Indisponible
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ livreur.nombreCommandesEnCours > 0 ? 'bg-blue' : 'bg-secondary' }}">
+                                            {{ livreur.nombreCommandesEnCours }} / 3
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ path('admin_livreur_show', {'id': livreur.id}) }}" 
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="Voir">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ path('admin_livreur_edit', {'id': livreur.id}) }}" 
+                                               class="btn btn-sm btn-outline-warning"
+                                               title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" action="{{ path('admin_livreur_delete', {'id': livreur.id}) }}" 
+                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livreur ?');"
+                                                  class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ livreur.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-motorcycle fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucun livreur enregistré</h4>
+                    <p class="text-muted">Commencez par ajouter un livreur</p>
+                    <a href="{{ path('admin_livreur_new') }}" class="btn btn-red">
+                        <i class="fas fa-plus-circle me-1"></i>Ajouter un livreur
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Légende #}
+    <div class="card mt-3">
+        <div class="card-body">
+            <h6 class="card-title"><i class="fas fa-info-circle me-2"></i>Légende des statuts</h6>
+            <div class="row">
+                <div class="col-md-3">
+                    <span class="badge bg-success me-2">●</span>
+                    <small>Disponible - Peut prendre de nouvelles commandes</small>
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-warning text-dark me-2">●</span>
+                    <small>Occupé - Livraisons en cours (max 3)</small>
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-danger me-2">●</span>
+                    <small>Indisponible - Non opérationnel</small>
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-blue me-2">●</span>
+                    <small>Commandes en cours / limite</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

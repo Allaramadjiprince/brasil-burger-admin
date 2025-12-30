@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Zone - Brasil Burger Admin{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-red text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>Nouvelle Zone de Livraison
+                        </h4>
+                        <a href="{{ path('admin_zone_livraison_index') }}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i>Retour
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.nom, 'Nom de la zone') }}
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Zone Centre-ville'}}) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.quartiers, 'Quartiers couverts') }}
+                        {{ form_widget(form.quartiers, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Séparez les quartiers par des virgules\nEx: Plateau, Médina, Ouakam'}}) }}
+                        <div class="form-text">Séparez les quartiers par des virgules (,)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.prix, 'Prix de livraison (XOF)') }}
+                        <div class="input-group">
+                            {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'placeholder': '0.00'}}) }}
+                            <span class="input-group-text">XOF</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-red btn-lg">
+                            <i class="fas fa-save me-1"></i>Créer la Zone
+                        </button>
+                        <a href="{{ path('admin_zone_livraison_index') }}" class="btn btn-secondary ms-2">
+                            Annuler
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+# Template login CORRECT
+@'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Brasil Burger Login</title>
+    <style>
+        body { 
+            background: #FF0000;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 300px;
+        }
+        h1 {
+            color: #FF0000;
+            text-align: center;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background: #FF0000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>BRASIL BURGER</h1>
+        <p style="text-align: center; color: #666;">Admin</p>
+        
+        {% if error %}
+            <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                Erreur: {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+        
+        <form method="post">
+            <!-- SYMFONY ATTEND _username POUR L'EMAIL -->
+            <input type="text" name="_username" placeholder="Email" value="{{ last_username }}" required>
+            
+            <!-- SYMFONY ATTEND _password -->
+            <input type="password" name="_password" placeholder="Mot de passe" required>
+            
+            <button type="submit">Se connecter</button>
+        </form>
+    </div>
+</body>
+</html>
+'@ | Out-File -FilePath "templates/admin/security/login.html.twig" -Encoding UTF8 -Force
+
+Write-Host "✅ Template login corrigé avec _username et _password" -ForegroundColor Green
