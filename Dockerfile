@@ -1,9 +1,6 @@
-﻿# Dockerfile pour Brasil Burger Admin - Symfony 7
+﻿
+FROM php:8.3-apache
 
-# Utilise l'image PHP 8.2 avec Apache
-FROM php:8.2-apache
-
-# Mettre à jour et installer les dépendances système
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
     libicu-dev \
