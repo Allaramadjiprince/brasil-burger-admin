@@ -1,3 +1,5 @@
+﻿# .gitignore corrigÃ© - utiliser des guillemets doubles pour Ã©viter les problÃ¨mes d'apostrophe
+@"
 # .gitignore pour Symfony Brasil Burger avec Docker
 
 ### SYMFONY ###
@@ -74,9 +76,8 @@ render-build.sh
 render.yaml
 
 ### DOCKER (AJOUTS) ###
-# Fichiers Docker
+# Fichiers Docker - NOTE: # .dockerignore (DOIT être versionné, retiré de la liste) DOIT Ãªtre versionnÃ© !
 Dockerfile
-.dockerignore
 docker-compose.yml
 docker-compose.*.yml
 
@@ -99,3 +100,4 @@ docker-compose.override.yml
 # Docker Compose
 .env.docker
 docker.env
+"@ | Set-Content -Path ".gitignore" -Encoding UTF8

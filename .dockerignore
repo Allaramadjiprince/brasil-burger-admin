@@ -1,0 +1,51 @@
+# Créer .dockerignore à la racine
+@'
+# Symfony
+/vendor/
+/var/
+/public/bundles/
+/translations/
+### PHP ###
+.phpunit.result.cache
+### Composer ###
+composer.phar
+/composer.lock
+### IDE ###
+/.idea
+/.vscode
+### OS ###
+.DS_Store
+Thumbs.db
+### UPLOADS ###
+/public/uploads/**
+!public/uploads/.gitkeep
+### NODE ###
+/node_modules/
+### TESTS ###
+/coverage/
+.phpunit.result.cache
+### LOGS ###
+*.log
+### DIVERS ###
+*.sql
+*.bak
+*.tmp
+### Render ###
+render.yaml
+render-build.sh
+### Docker inutile ###
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile.dev
+### Fichiers de développement ###
+/test_neon.php
+/tests/
+/assets/
+/importmap.php
+### Autres ###
+compose.yaml
+compose.override.yaml
+'@ | Out-File -FilePath ".dockerignore" -Encoding UTF8
+
+# Vérifier qu'il a été créé
+Test-Path .dockerignore
