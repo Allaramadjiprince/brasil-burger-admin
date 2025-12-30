@@ -1,72 +1,34 @@
-﻿# Dockerfile pour Brasil Burger Admin - Symfony 7
+﻿# Dockerfile minimal pour Render
 FROM php:8.3-apache
 
-# Mettre à jour et installer les dépendances système
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y \
-    libicu-dev \
-    libpq-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    git \
-    unzip \
-    wget
-RUN rm -rf /var/lib/apt/lists/*
+# 1. Installer seulement l'essentiel
+RUN apt-get update && apt-get install -y \
+    libpq-dev libpng-dev libzip-dev unzip
 
-# Configurer et installer les extensions PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install -j$(nproc) \
-    gd \
-    intl \
-    pdo \
-    pdo_mysql \
-    pdo_pgsql \
-    zip \
-    opcache
+# 2. Installer extensions PHP
+RUN docker-php-ext-install pdo pdo_pgsql gd zip
 
-# Activer le module rewrite d'Apache
+# 3. Activer Apache rewrite
 RUN a2enmod rewrite
 
-# Installer Composer
+# 4. Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Définir le répertoire de travail
+# 5. Répertoire de travail
 WORKDIR /var/www/html
 
-# Augmenter la mémoire PHP
-RUN echo 'memory_limit = 512M' > /usr/local/etc/php/conf.d/memory.ini
-RUN echo 'upload_max_filesize = 10M' >> /usr/local/etc/php/conf.d/memory.ini
-RUN echo 'post_max_size = 10M' >> /usr/local/etc/php/conf.d/memory.ini
-
-# Copier les fichiers
+# 6. Copier tout
 COPY . .
 
-# Installer les dépendances Composer
+# 7. Augmenter mémoire PHP (CRITIQUE)
+RUN echo 'memory_limit = 512M' > /usr/local/etc/php/conf.d/memory.ini
+
+# 8. Installer dépendances SANS scripts
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
-# Créer les dossiers nécessaires
-RUN mkdir -p public/uploads/produits var/log var/cache
-RUN chown -R www-data:www-data var public/uploads
-RUN chmod -R 755 public/uploads
-RUN chmod -R 777 var/log var/cache
+# 9. Créer dossiers avec permissions
+RUN mkdir -p var/cache var/log
+RUN chmod -R 777 var/cache var/log
 
-# Configuration Apache pour Symfony
-RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf
-RUN echo '    DocumentRoot /var/www/html/public' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '    <Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
-
-# Exécuter le cache Symfony
-RUN APP_ENV=prod php bin/console cache:clear --no-warmup
-RUN APP_ENV=prod php bin/console cache:warmup
-
-# Exposer le port 80
-EXPOSE 80
-
-# Commande de démarrage
+# 10. Démarrer Apache
 CMD ["apache2-foreground"]
