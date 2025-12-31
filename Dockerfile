@@ -32,5 +32,14 @@ RUN chmod -R 777 var/cache var/log
 # Configuration Apache pour Symfony
 RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# ✅ CRITIQUE : Ajouter DirectoryIndex pour Apache
+RUN echo "DirectoryIndex index.php index.html" >> /etc/apache2/apache2.conf
+RUN echo "Options -Indexes" >> /etc/apache2/apache2.conf
+
+# ✅ CRITIQUE : Nettoyer le cache Symfony
+RUN APP_ENV=prod php bin/console cache:clear --no-warmup || true
+RUN APP_ENV=prod php bin/console cache:warmup || true
+
 # 10. Démarrer Apache
 CMD ["apache2-foreground"]
