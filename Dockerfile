@@ -29,5 +29,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 RUN mkdir -p var/cache var/log
 RUN chmod -R 777 var/cache var/log
 
+# Configuration Apache pour Symfony
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 # 10. Démarrer Apache
 CMD ["apache2-foreground"]
