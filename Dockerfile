@@ -1,43 +1,51 @@
-﻿FROM php:8.3-apache
+﻿# Dockerfile ULTIME pour Render Free
+FROM php:8.3
 
-# Installer les extensions
+# 1. Installer UNIQUEMENT l'essentiel
 RUN apt-get update && apt-get install -y \
-    libpq-dev libpng-dev libzip-dev unzip \
-    && docker-php-ext-install pdo pdo_pgsql gd zip \
-    && a2enmod rewrite
+    libpq-dev \
+    libpng-dev \
+    libzip-dev \
+    unzip \
+    && docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    gd \
+    zip \
+    opcache
 
-# Installer Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# 2. Installer Composer
+RUN curl -sS https://getcomposer.org/installer | php -- \
+    --install-dir=/usr/local/bin --filename=composer
 
+# 3. Répertoire de travail
 WORKDIR /var/www/html
 
-# Copier tout
+# 4. Copier d'abord les fichiers de dépendances (optimisation cache)
+COPY composer.json composer.lock symfony.lock ./
+
+# 5. Augmenter mémoire PHP (CRITIQUE pour Render Free)
+RUN echo 'memory_limit = 256M' > /usr/local/etc/php/conf.d/memory.ini
+RUN echo 'upload_max_filesize = 10M' >> /usr/local/etc/php/conf.d/memory.ini
+RUN echo 'post_max_size = 10M' >> /usr/local/etc/php/conf.d/memory.ini
+
+# 6. Installer dépendances SANS SCRIPTS
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --prefer-dist
+
+# 7. Copier tout le reste
 COPY . .
 
-# Augmenter mémoire
-RUN echo 'memory_limit = 512M' > /usr/local/etc/php/conf.d/memory.ini
-
-# Installer dépendances
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
-
-# Créer dossiers et permissions
-RUN mkdir -p var/cache var/log public/uploads \
+# 8. Créer dossiers et permissions (CRITIQUE)
+RUN mkdir -p \
+    var/cache \
+    var/log \
+    public/uploads \
     && chmod -R 777 var \
     && chmod -R 755 public/uploads
 
-# Configuration Apache
-RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf
-RUN echo '    DocumentRoot /var/www/html/public' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '    <Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '        Options -Indexes' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '        DirectoryIndex index.php' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf
-RUN echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
+# 9. Nettoyer cache Symfony (CRITIQUE)
+RUN APP_ENV=prod php bin/console cache:clear --no-warmup
+RUN APP_ENV=prod php bin/console cache:warmup
 
-# Script de démarrage
-COPY docker/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-CMD ["/usr/local/bin/start.sh"]
+# 10. Lancer le serveur PHP sur le PORT Render (ULTRA CRITIQUE)
+CMD ["php", "-S", "0.0.0.0:${PORT}", "-t", "public"]
