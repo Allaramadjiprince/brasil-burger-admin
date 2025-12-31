@@ -1,45 +1,43 @@
 ﻿FROM php:8.3-apache
 
-# 1. Installer seulement l'essentiel
+# Installer les extensions
 RUN apt-get update && apt-get install -y \
-    libpq-dev libpng-dev libzip-dev unzip
+    libpq-dev libpng-dev libzip-dev unzip \
+    && docker-php-ext-install pdo pdo_pgsql gd zip \
+    && a2enmod rewrite
 
-# 2. Installer extensions PHP
-RUN docker-php-ext-install pdo pdo_pgsql gd zip
-
-# 3. Activer Apache rewrite
-RUN a2enmod rewrite
-
-# 4. Installer Composer
+# Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# 5. Répertoire de travail
 WORKDIR /var/www/html
 
-# 6. Copier tout
+# Copier tout
 COPY . .
 
-# 7. Augmenter mémoire PHP (CRITIQUE)
+# Augmenter mémoire
 RUN echo 'memory_limit = 512M' > /usr/local/etc/php/conf.d/memory.ini
 
-# 8. Installer dépendances SANS scripts
+# Installer dépendances
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
-# 9. Créer dossiers avec permissions
-RUN mkdir -p var/cache var/log
-RUN chmod -R 777 var/cache var/log
+# Créer dossiers et permissions
+RUN mkdir -p var/cache var/log public/uploads \
+    && chmod -R 777 var \
+    && chmod -R 755 public/uploads
 
-# Configuration Apache pour Symfony
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# Configuration Apache
+RUN echo '<VirtualHost *:80>' > /etc/apache2/sites-available/000-default.conf
+RUN echo '    DocumentRoot /var/www/html/public' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '    <Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '        AllowOverride All' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '        Require all granted' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '        Options -Indexes' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '        DirectoryIndex index.php' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '    </Directory>' >> /etc/apache2/sites-available/000-default.conf
+RUN echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 
-# ✅ CRITIQUE : Ajouter DirectoryIndex pour Apache
-RUN echo "DirectoryIndex index.php index.html" >> /etc/apache2/apache2.conf
-RUN echo "Options -Indexes" >> /etc/apache2/apache2.conf
+# Script de démarrage
+COPY docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
-# ✅ CRITIQUE : Nettoyer le cache Symfony
-RUN APP_ENV=prod php bin/console cache:clear --no-warmup || true
-RUN APP_ENV=prod php bin/console cache:warmup || true
-
-# 10. Démarrer Apache
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/start.sh"]
