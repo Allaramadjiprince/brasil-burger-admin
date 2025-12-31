@@ -1,47 +1,9 @@
-# .gitignore pour Symfony Brasil Burger
-
-### SYMFONY ###
+# .gitignore pour Render
 /vendor/
 /var/
-/public/bundles/
-
-### ENVIRONNEMENT ###
 /.env
-/.env.local
-/.env.*.local
-
-### LOGS ###
 *.log
-
-### CACHE ###
-/cache/
-/*/cache/
-
-### IDE ###
 /.idea/
 /.vscode/
-
-### UPLOADS ###
-/public/uploads/**
-!public/uploads/.gitkeep
-
-### NODE ###
-/node_modules/
-
-### TESTS ###
-/coverage/
-
-### DIVERS ###
 .DS_Store
-Thumbs.db
-*.sql
-*.bak
-*.tmp
-
-### RENDER ###
-render.yaml
-render-build.sh
-
-### DOCKER ###
-docker-compose.yml
-docker-compose.*.yml
+/public/uploads/**
